@@ -1,5 +1,4 @@
 import React, { FC, useState, useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Typography,
   Button,
@@ -22,7 +21,6 @@ import AddIcon from "@material-ui/icons/Add";
 import HederList from "./components/HederList/HederList";
 import { Grid } from "@material-ui/core";
 
-
 const Register = () => {
   let listInit = JSON.parse(localStorage.getItem("studentsList"));
   if (!listInit) {
@@ -40,9 +38,9 @@ const Register = () => {
     gender: "",
   });
 
-useEffect(()=> {
-  localStorage.setItem("studentsList", JSON.stringify(studentsList));
-},[studentsList])
+  useEffect(() => {
+    localStorage.setItem("studentsList", JSON.stringify(studentsList));
+  }, [studentsList]);
   const handleClickOpenRegisterModal = () => {
     setOpenRModal(true);
   };
@@ -154,7 +152,6 @@ useEffect(()=> {
             <DialogTitle id="form-dialog-title">Student register</DialogTitle>
             <DialogContent>
               <DialogContentText>Enter new student data</DialogContentText>
-
               <TextField
                 autoFocus
                 margin="dense"
