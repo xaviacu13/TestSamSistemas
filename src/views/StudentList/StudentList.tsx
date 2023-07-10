@@ -1,6 +1,6 @@
 import react from 'react'
 import './App.css'
-import { Title, Register } from './components'
+import { Title, Register } from '../../components'
 
 function App() {
 
