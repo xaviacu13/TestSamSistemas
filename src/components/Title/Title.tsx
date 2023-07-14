@@ -13,7 +13,7 @@ const Title: FC<TitleProps> = ({ title, subTitle }) => {
   // const classes: any = useStyles()
   return (
     <Card>
-      <Typography>{title}</Typography>
+      <Typography variant='h5'>{title}</Typography>
       <Typography>{subTitle}</Typography>
     </Card>
   )

@@ -3,7 +3,6 @@ import { makeStyles } from '@mui/styles'
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    padding: 10,
   },
 }))
 

@@ -13,6 +13,7 @@ import {
   DialogContentText,
   DialogActions,
   TextField,
+  Divider,
 } from "@mui/material";
 import shortid from "shortid";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -22,25 +23,21 @@ import HederList from "./components/HederList/HederList";
 import { Grid } from "@material-ui/core";
 
 const Register = () => {
-  let listInit = JSON.parse(localStorage.getItem("studentsList"));
-  if (!listInit) {
-    listInit = [];
+  let nitList = JSON.parse(localStorage.getItem("studentsList"));
+  if (!nitList) {
+    nitList = [];
   }
   const [openRModal, setOpenRModal] = useState(false);
   const [openDConfirmation, setOpenDConfirmation] = useState(false);
-  const [deleteStudent, setDeletStudent] = useState("");
-  const [studentsList, setStudentsList] = useState(listInit);
-  const [newStudent, setNewStudent] = useState({
-    id: "",
-    name: "",
-    lastName: "",
-    age: "",
-    gender: "",
-  });
+  const [deleteStudent, setDeleteStudent] = useState({});
+  const [studentsList, setStudentsList] = useState(nitList);
+  const [editStudent, setEditStudent] = useState({});
+  const [newStudent, setNewStudent] = useState({});
 
   useEffect(() => {
     localStorage.setItem("studentsList", JSON.stringify(studentsList));
-  }, [studentsList]);
+  }, [studentsList, editStudent]);
+
   const handleClickOpenRegisterModal = () => {
     setOpenRModal(true);
   };
@@ -48,23 +45,66 @@ const Register = () => {
   const handleClose = () => {
     setOpenRModal(false);
     setOpenDConfirmation(false);
+    resetList();
   };
 
-  const onEdit = (name: any) => {
-    console.log("Editing....", name);
+  const resetList = () => {
+    setDeleteStudent({ id: "", name: "", lastName: "", age: "", gender: "" });
+    setNewStudent({ id: "", name: "", lastName: "", age: "", gender: "" });
+    setEditStudent({ id: "", name: "", lastName: "", age: "", gender: "" });
   };
-  const onDelete = (name: any) => {
-    const newList = studentsList.filter((list) => list.name !== name);
+
+  useEffect(() => {
+    if (editStudent !== null) {
+      const student = editStudent;
+      setNewStudent(student);
+    } else {
+      resetList();
+    }
+  }, [editStudent]);
+
+  const handleEditStudent = (student: any) => {
+    const newStudent = student;
+    setEditStudent(newStudent);
+    setOpenRModal(true);
+  };
+  const onDelete = (deleteStudent: any) => {
+    const newList = studentsList.filter((list) => list.id !== deleteStudent.id);
     setStudentsList(newList);
     setOpenDConfirmation(false);
   };
-  const addNewStudent = () => {
-    setStudentsList([...studentsList, newStudent]);
+  const isEditing = editStudent && editStudent.id ? true : false;
+  const isDataValid =
+    newStudent &&
+    newStudent.name !== "" &&
+    newStudent.lastName !== "" &&
+    newStudent.age !== ""
+      ? true
+      : false;
+
+  const saveChanges = () => {
+    if (isEditing) {
+      const newList = studentsList;
+      newList.map((item) => {
+        if (item.id === editStudent.id) {
+          item.id = editStudent.id;
+          item.name = newStudent.name;
+          item.lastName = newStudent.lastName;
+          item.age = newStudent.age;
+          item.gender = newStudent.gender;
+        }
+      });
+      setStudentsList(newList);
+      resetList();
+    } else {
+      setStudentsList([...studentsList, newStudent]);
+    }
   };
   const onSubmit = (event: any) => {
     event.preventDefault();
-    addNewStudent();
+    saveChanges();
     setOpenRModal(false);
+    resetList();
   };
 
   const handleChange = (
@@ -76,40 +116,57 @@ const Register = () => {
       [event.target.name]: event.target.value,
     }));
   };
-  const handleDeletStudent = (student: string) => {
-    setOpenDConfirmation(true), setDeletStudent(student);
+  const handleDeletStudent = (student: any) => {
+    const deleteData = student;
+    setOpenDConfirmation(true), setDeleteStudent(deleteData);
     setOpenDConfirmation(true);
   };
 
   return (
     <>
       <Grid>
-        <Button onClick={handleClickOpenRegisterModal} endIcon={<AddIcon />}>
+        <Button
+          onClick={handleClickOpenRegisterModal}
+          endIcon={<AddIcon />}
+          color="primary"
+          variant="outlined"
+        >
           Add new student
         </Button>
       </Grid>
       <Grid>
         <TableContainer>
-          <Typography color="primary">Students list</Typography>
+          {studentsList && studentsList.length !== 0 && (
+            <Typography color="primary">Students list</Typography>
+          )}
+          <Divider />
           <Table aria-label="simple table">
-            <HederList />
-            <TableBody>
-              {studentsList &&
-                studentsList.map((student: any) => (
-                  <TableRow key={student.name}>
-                    <TableCell component="th" scope="student">
-                      {student.name}
-                    </TableCell>
-                    <TableCell align="right">{student.lastName}</TableCell>
-                    <TableCell align="right">{student.age}</TableCell>
-                    <TableCell align="right">{student.gender}</TableCell>
-                    <EditIcon onClick={handleClickOpenRegisterModal}></EditIcon>
-                    <DeleteIcon
-                      onClick={() => handleDeletStudent(student.name)}
-                    ></DeleteIcon>
-                  </TableRow>
-                ))}
-            </TableBody>
+            {studentsList && studentsList.length === 0 ? (
+              <Typography variant="h6">No records</Typography>
+            ) : (
+              <>
+                <HederList />
+                <TableBody>
+                  {studentsList &&
+                    studentsList.map((student: any) => (
+                      <TableRow key={student.name}>
+                        <TableCell component="th" scope="student">
+                          {student.name}
+                        </TableCell>
+                        <TableCell align="right">{student.lastName}</TableCell>
+                        <TableCell align="right">{student.age}</TableCell>
+                        <TableCell align="right">{student.gender}</TableCell>
+                        <EditIcon
+                          onClick={() => handleEditStudent(student)}
+                        ></EditIcon>
+                        <DeleteIcon
+                          onClick={() => handleDeletStudent(student)}
+                        ></DeleteIcon>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </>
+            )}
           </Table>
         </TableContainer>
       </Grid>
@@ -125,7 +182,7 @@ const Register = () => {
           </DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete <span>{deleteStudent}</span>?
+              Are you sure you want to delete <span>{deleteStudent.name}</span>?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -151,8 +208,11 @@ const Register = () => {
           <form onSubmit={(event) => onSubmit(event)}>
             <DialogTitle id="form-dialog-title">Student register</DialogTitle>
             <DialogContent>
-              <DialogContentText>Enter new student data</DialogContentText>
+              <DialogContentText>
+                {isEditing ? "Edit student data" : "Enter new student data"}
+              </DialogContentText>
               <TextField
+                value={newStudent.name}
                 autoFocus
                 margin="dense"
                 id="name"
@@ -164,6 +224,7 @@ const Register = () => {
                 onChange={handleChange}
               />
               <TextField
+                value={newStudent.lastName}
                 autoFocus
                 margin="dense"
                 id="lastName"
@@ -175,6 +236,7 @@ const Register = () => {
                 onChange={handleChange}
               />
               <TextField
+                value={newStudent.age}
                 autoFocus
                 margin="dense"
                 name="age"
@@ -185,6 +247,7 @@ const Register = () => {
                 onChange={handleChange}
               />
               <TextField
+                value={newStudent.gender}
                 autoFocus
                 margin="dense"
                 id="gender"
@@ -200,8 +263,13 @@ const Register = () => {
               <Button onClick={handleClose} color="primary">
                 Cancel
               </Button>
-              <Button type="submit" color="primary" autoFocus>
-                Save
+              <Button
+                type="submit"
+                color="primary"
+                autoFocus
+                disabled={!isDataValid}
+              >
+                {isEditing ? "Edit" : "Save"}
               </Button>
             </DialogActions>
           </form>
